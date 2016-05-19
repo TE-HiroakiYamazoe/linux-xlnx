@@ -242,6 +242,41 @@ syscall_debug_table:
 	lwi	r30, r1, PT_R30;					\
 	lwi	r31, r1, PT_R31;	/* Restore cur task reg */
 
+#define RESTORE_REGS_BIP \
+	lwi	r11, r1, PT_MSR;					\
+	ori	r11, r11, MSR_BIP;				\
+	mts	rmsr , r11;						\
+	lwi	r2, r1, PT_R2;	/* restore SDA */		\
+	lwi	r3, r1, PT_R3;					\
+	lwi	r4, r1, PT_R4;					\
+	lwi	r5, r1, PT_R5;					\
+	lwi	r6, r1, PT_R6;					\
+	lwi	r7, r1, PT_R7;					\
+	lwi	r8, r1, PT_R8;					\
+	lwi	r9, r1, PT_R9;					\
+	lwi	r10, r1, PT_R10;					\
+	lwi	r11, r1, PT_R11;	/* restore clobbered regs after rval */\
+	lwi	r12, r1, PT_R12;					\
+	lwi	r13, r1, PT_R13;	/* restore SDA2 */		\
+	lwi	r14, r1, PT_PC;	/* RESTORE_LINK PC, before IRQ/trap */\
+	lwi	r15, r1, PT_R15;	/* restore LP */		\
+	lwi	r16, r1, PT_R16;					\
+	lwi	r17, r1, PT_R17;					\
+	lwi	r18, r1, PT_R18;	/* restore asm scratch reg */	\
+	lwi	r19, r1, PT_R19;					\
+	lwi	r20, r1, PT_R20;					\
+	lwi	r21, r1, PT_R21;					\
+	lwi	r22, r1, PT_R22;					\
+	lwi	r23, r1, PT_R23;					\
+	lwi	r24, r1, PT_R24;					\
+	lwi	r25, r1, PT_R25;					\
+	lwi	r26, r1, PT_R26;					\
+	lwi	r27, r1, PT_R27;					\
+	lwi	r28, r1, PT_R28;					\
+	lwi	r29, r1, PT_R29;					\
+	lwi	r30, r1, PT_R30;					\
+	lwi	r31, r1, PT_R31;	/* Restore cur task reg */
+
 #define SAVE_STATE	\
 	swi	r1, r0, TOPHYS(PER_CPU(ENTRY_SP)); /* save stack */	\
 	/* See if already in kernel mode.*/				\
@@ -426,7 +461,7 @@ C_ENTRY(ret_from_trap):
 	swi	CURRENT_TASK, r0, PER_CPU(CURRENT_SAVE); /* save current */
 	VM_OFF;
 	tophys(r1,r1);
-	RESTORE_REGS;
+	RESTORE_REGS_BIP;
 	addik	r1, r1, PT_SIZE		/* Clean up stack space.  */
 	lwi	r1, r1, PT_R1 - PT_SIZE;/* Restore user stack pointer. */
 	bri	6f;
@@ -435,7 +470,7 @@ C_ENTRY(ret_from_trap):
 2:	set_bip;			/*  Ints masked for state restore */
 	VM_OFF;
 	tophys(r1,r1);
-	RESTORE_REGS;
+	RESTORE_REGS_BIP;
 	addik	r1, r1, PT_SIZE		/* Clean up stack space.  */
 	tovirt(r1,r1);
 6:
